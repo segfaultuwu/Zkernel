@@ -1,4 +1,5 @@
 #include "charlesnicholson/nanoprintf.h"
+#include "zk/arch/x86_64/pit.h"
 #include <zk/alloc.h>
 #include <stdarg.h>
 #include <zk/graphics.h>
@@ -57,9 +58,9 @@ void graphics_init(void) {
         0  // rotation
     );
 
-    kprintf("Framebuffer: %ux%u pitch=%u\n", fb->width, fb->height, fb->pitch);
-    kprintf("Address: 0x%lx\n", (uint64_t)fb->address);
-    println("Framebuffer console initialized");
+    logfmt(LOG_INFO,"Framebuffer: %ux%u pitch=%u\n", fb->width, fb->height, fb->pitch);
+    logfmt(LOG_INFO,"Address: 0x%lx\n", (uint64_t)fb->address);
+    log(LOG_INFO,"Framebuffer console initialized\n");
 }
 
 void print(const char *text) {
@@ -100,4 +101,72 @@ void kprintf(const char *restrict format, ...) {
 void println(const char *text) {
     print(text);
     print("\n");
+}
+
+static void log_prefix(loglevel level, const char *time) {
+    print(ANSI_GRAY);
+    print("[");
+    print(time);
+    print("] ");
+    print(ANSI_RESET);
+
+    switch (level) {
+        case LOG_INFO:
+            print(ANSI_GREEN "[INFO] " ANSI_RESET);
+            break;
+
+        case LOG_WARN:
+            print(ANSI_YELLOW "[WARN] " ANSI_RESET);
+            break;
+
+        case LOG_ERROR:
+            print(ANSI_RED "[ERROR] " ANSI_RESET);
+            break;
+
+        case LOG_DEBUG:
+            print(ANSI_CYAN "[DEBUG] " ANSI_RESET);
+            break;
+
+        default:
+            print(ANSI_MAGENTA "[UNKNOWN] " ANSI_RESET);
+            break;
+    }
+}
+
+void log(loglevel level, const char *text) {
+    if (text == NULL) {
+        return;
+    }
+
+    char uptime[64];
+    pit_format_uptime(uptime, sizeof(uptime));
+
+    log_prefix(level, uptime);
+    println(text);
+}
+
+void logfmt(loglevel level, const char *format, ...) {
+    if (format == NULL) {
+        return;
+    }
+
+    char uptime[64];
+    pit_format_uptime(uptime, sizeof(uptime));
+
+    va_list args;
+    va_start(args, format);
+
+    char buffer[1024];
+    int len = npf_vsnprintf(buffer, sizeof(buffer), format, args);
+
+    va_end(args);
+
+    if (len <= 0) {
+        return;
+    }
+
+    buffer[sizeof(buffer) - 1] = '\0';
+
+    log_prefix(level, uptime);
+    println(buffer);
 }

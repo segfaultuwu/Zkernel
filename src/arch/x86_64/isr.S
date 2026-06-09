@@ -1,19 +1,20 @@
-.extern exception_handler
+.section .text
 
-.macro ISR_NOERR vector
-.global isr\vector
-.type isr\vector, @function
-isr\vector:
+.extern exception_handler
+.extern irq_handler
+
+.macro ISR_NOERR num
+.global isr\num
+isr\num:
     pushq $0
-    pushq $\vector
+    pushq $\num
     jmp isr_common
 .endm
 
-.macro ISR_ERR vector
-.global isr\vector
-.type isr\vector, @function
-isr\vector:
-    pushq $\vector
+.macro ISR_ERR num
+.global isr\num
+isr\num:
+    pushq $\num
     jmp isr_common
 .endm
 
@@ -50,20 +51,91 @@ ISR_ERR   29
 ISR_ERR   30
 ISR_NOERR 31
 
-isr_common:
-    /*
-     * Stack:
-     * [rsp + 0]  = vector
-     * [rsp + 8]  = error_code
-     *
-     * C ABI:
-     * rdi = vector
-     * rsi = error_code
-     */
-    movq (%rsp), %rdi
-    movq 8(%rsp), %rsi
+.global isr32
+isr32:
+    pushq $0
+    pushq $32
+    jmp irq_common
 
+.global isr_common
+isr_common:
+    pushq %rax
+    pushq %rcx
+    pushq %rdx
+    pushq %rbx
+    pushq %rbp
+    pushq %rsi
+    pushq %rdi
+    pushq %r8
+    pushq %r9
+    pushq %r10
+    pushq %r11
+    pushq %r12
+    pushq %r13
+    pushq %r14
+    pushq %r15
+
+    movq 120(%rsp), %rdi
+    movq 128(%rsp), %rsi
     call exception_handler
+
+    popq %r15
+    popq %r14
+    popq %r13
+    popq %r12
+    popq %r11
+    popq %r10
+    popq %r9
+    popq %r8
+    popq %rdi
+    popq %rsi
+    popq %rbp
+    popq %rbx
+    popq %rdx
+    popq %rcx
+    popq %rax
 
     addq $16, %rsp
     iretq
+
+.global irq_common
+irq_common:
+    pushq %rax
+    pushq %rcx
+    pushq %rdx
+    pushq %rbx
+    pushq %rbp
+    pushq %rsi
+    pushq %rdi
+    pushq %r8
+    pushq %r9
+    pushq %r10
+    pushq %r11
+    pushq %r12
+    pushq %r13
+    pushq %r14
+    pushq %r15
+
+    movq 120(%rsp), %rdi
+    call irq_handler
+
+    popq %r15
+    popq %r14
+    popq %r13
+    popq %r12
+    popq %r11
+    popq %r10
+    popq %r9
+    popq %r8
+    popq %rdi
+    popq %rsi
+    popq %rbp
+    popq %rbx
+    popq %rdx
+    popq %rcx
+    popq %rax
+
+    addq $16, %rsp
+    iretq
+
+.section .note.GNU-stack,"",@progbits

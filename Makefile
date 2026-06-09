@@ -41,8 +41,8 @@ CFLAGS := \
 	-I src \
 	-I $(FLANTERM_DIR)/src \
 	-I $(LIMINE_PROTOCOL_DIR)/include \
-	-I $(LIMINE_DIR)
-
+	-I $(LIMINE_DIR) \
+	-DZK_ARCH_X86_64
 
 LDFLAGS := \
 	-nostdlib \

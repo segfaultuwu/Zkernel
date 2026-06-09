@@ -1,3 +1,5 @@
+#include "zk/arch/x86_64/pic.h"
+#include "zk/arch/x86_64/pit.h"
 #include <zk/arch/x86_64/idt.h>
 #include <zk/graphics.h>
 
@@ -56,6 +58,7 @@ extern void isr28(void);
 extern void isr29(void);
 extern void isr30(void);
 extern void isr31(void);
+extern void isr32(void);
 
 static struct idt_entry idt[IDT_ENTRIES];
 static struct idtr idtr;
@@ -160,9 +163,22 @@ void idt_init(void) {
     idt_set_gate(29, isr29);
     idt_set_gate(30, isr30);
     idt_set_gate(31, isr31);
+    idt_set_gate(32, isr32);
 
     idtr.limit = sizeof(idt) - 1;
     idtr.base = (uint64_t)&idt;
 
     idt_load(&idtr);
+}
+
+void irq_handler(uint64_t vector) {
+    if (vector == 32) {
+        pit_handler();
+        pic_send_eoi(0);
+        return;
+    }
+
+    if (vector >= 32 && vector <= 47) {
+        pic_send_eoi(vector - 32);
+    }
 }
