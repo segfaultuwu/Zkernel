@@ -1,0 +1,35 @@
+CompileFlags:
+  Add:
+    - --target=x86_64-unknown-none
+    - -std=gnu11
+    - -ffreestanding
+    - -fno-builtin
+    - -fno-stack-protector
+    - -fno-stack-check
+    - -fno-lto
+    - -fno-pic
+    - -fno-pie
+    - -fno-asynchronous-unwind-tables
+    - -fno-unwind-tables
+    - -m64
+    - -march=x86-64
+    - -mcmodel=large
+    - -mno-red-zone
+    - -mno-mmx
+    - -mno-sse
+    - -mno-sse2
+    - -I/home/segfault/Projekty/Zkernel/include
+    - -I/home/segfault/Projekty/Zkernel/src
+    - -I/home/segfault/Projekty/Zkernel/extern/flanterm/src
+    - -I/home/segfault/Projekty/Zkernel/extern/limine-protocol/include
+    - -I/home/segfault/Projekty/Zkernel/extern/limine
+  Remove:
+    - -Werror
+
+Diagnostics:
+  Suppress:
+    - unused-includes
+    - missing-includes
+
+Index:
+  Background: Build
