@@ -1,0 +1,12 @@
+[submodule "extern/limine"]
+	path = extern/limine
+	url = https://github.com/limine-bootloader/limine.git
+  branch = v11.x-binary
+
+[submodule "extern/limine-protocol"]
+	path = extern/limine-protocol
+	url = https://github.com/limine-bootloader/limine-protocol.git
+
+[submodule "extern/flanterm"]
+	path = extern/flanterm
+	url = https://github.com/mintsuki/flanterm.git
